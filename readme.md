@@ -1,109 +1,41 @@
 # 🏦 Banking System
 
-This project was developed as part of the NTT DATA Bootcamp - Data Engineering with Python challenge on [Digital Innovation One (DIO)](https://www.dio.me/). The goal is to implement a simple banking system with deposit, withdrawal, and statement functionalities.
+This project was developed as part of the NTT DATA Bootcamp - Data Engineering with Python challenge on [Digital Innovation One (DIO)](https://www.dio.me/). The goal is to implement a simple banking system with deposit, withdrawal, statement, user, and account management functionalities.
 
 ## ⚙️ Features
 
 The banking system includes the following features:
-1. **Deposit**: Allows the user to deposit positive amounts into the bank account.
-2. **Withdraw**: Allows up to 3 withdrawals per day, with a maximum limit of R$ 500.00 per withdrawal.
-3. **Statement**: Displays all deposits and withdrawals made, as well as the current account balance.
-4. **Exit**: Closes the system.
+1. **Deposit**: Allows the user to deposit positive amounts into their bank account. Deposits are handled by positional arguments.
+2. **Withdraw**: Allows up to 3 withdrawals per day, with a maximum limit of R$ 500.00 per withdrawal. Withdrawals are handled by named arguments.
+3. **Statement**: Displays all deposits and withdrawals made, as well as the current account balance. It can receive both positional and named arguments.
+4. **Create User**: Users can be created by providing their name, date of birth, CPF (validated as a unique and 11-digit number), and address.
+5. **Create Account**: Each user can have one or more accounts. Accounts are stored with a unique sequential number, tied to a user.
+6. **List Accounts**: Displays all the accounts created, showing the account number, agency, and associated user.
+7. **List Clients**: Lists all registered clients, displaying their name, CPF, and address.
+8. **Exit**: Closes the system.
 
 ## 🔒 System Rules
 
-- **Deposits**: Must be positive amounts. All deposits are recorded in the statement.
+- **Deposits**: 
+  - Must be positive amounts.
+  - All deposits are recorded in the statement.
+  - Handled by positional arguments.
 - **Withdrawals**:
   - Limit of 3 withdrawals per day.
   - Maximum limit of R$ 500.00 per withdrawal.
   - Check available balance before making a withdrawal.
-- **Statement**: Lists all transactions (deposits and withdrawals). If there are no transactions, it informs that no transactions were made.
-
-## 🖥️ Main Screens
-<table>
-  <tr>
-    <td>Home Screen</td>
-    <td>Deposit Screen</td>
-   <td>Withdraw Screen</td>
-   <td>Statement Screen</td>
-   <td>Exit Screen</td>
-  <tr>
-    <td>
-      <a href="https://github.com/user-attachments/assets/4b75e885-c0c7-42dc-88e6-6de3a72321a0" target="_blank">
-        <img src="https://github.com/user-attachments/assets/da71b141-233f-4d29-83a5-5bb4c04cbe34" alt="Imagem 1" width="200"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/user-attachments/assets/875b9865-0f42-4716-885c-7bda358a4f0c" target="_blank">
-        <img src="https://github.com/user-attachments/assets/875b9865-0f42-4716-885c-7bda358a4f0c" alt="Imagem 2" width="200"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/user-attachments/assets/5648dc61-0dc4-4a91-9d3b-9393a7075718" target="_blank">
-        <img src="https://github.com/user-attachments/assets/5648dc61-0dc4-4a91-9d3b-9393a7075718" alt="Imagem 3" width="200"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/user-attachments/assets/7c6fe50c-3175-4dd1-8153-5feb285d4dbb" target="_blank">
-        <img src="https://github.com/user-attachments/assets/7c6fe50c-3175-4dd1-8153-5feb285d4dbb" alt="Imagem 4" width="200"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/user-attachments/assets/26ff5932-375a-48e9-8322-badffae32dd6" target="_blank">
-        <img src="https://github.com/user-attachments/assets/26ff5932-375a-48e9-8322-badffae32dd6" alt="Imagem 5" width="200"/>
-      </a>
-    </td>
-  </tr>
-</table>
-
-## 🖥️⚠️ User Warning Screens
-<table>
-  <tr>
-    <td>Wrong Key</td>
-    <td>Invalid Deposit</td>
-   <td>Withdrawal Limit (Maximum rounds)</td>
-   <td>Withdrawal Limit (Value per Rounds)</td>
-   <td>Insufficient balance</td>
-   <td>Invalid Withdrawal</td>
-   <td>No Transactions</td>
-  <tr>
-    <td>
-      <a href="https://github.com/user-attachments/assets/2ec588d0-1516-416b-84b9-4f67c8311400" target="_blank">
-        <img src="https://github.com/user-attachments/assets/2ec588d0-1516-416b-84b9-4f67c8311400" alt="Imagem 1" width="200"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/user-attachments/assets/f35920f3-bf9a-4fd0-9804-8ea2faf2f698" target="_blank">
-        <img src="https://github.com/user-attachments/assets/f35920f3-bf9a-4fd0-9804-8ea2faf2f698" alt="Imagem 2" width="200"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/user-attachments/assets/c7cadeb7-72b8-49ac-9782-8cd68f2fd3e6" target="_blank">
-        <img src="https://github.com/user-attachments/assets/c7cadeb7-72b8-49ac-9782-8cd68f2fd3e6" alt="Imagem 3" width="200"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/user-attachments/assets/8f70b59f-2887-4265-8d69-8b36b2bdf452" target="_blank">
-        <img src="https://github.com/user-attachments/assets/8f70b59f-2887-4265-8d69-8b36b2bdf452" alt="Imagem 4" width="200"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/user-attachments/assets/f5ed5437-b8d3-4bc7-ae69-3e6046608885" target="_blank">
-        <img src="https://github.com/user-attachments/assets/f5ed5437-b8d3-4bc7-ae69-3e6046608885" alt="Imagem 5" width="200"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/user-attachments/assets/46b19453-15ab-435f-b69e-d75db07621ac" target="_blank">
-        <img src="https://github.com/user-attachments/assets/46b19453-15ab-435f-b69e-d75db07621ac"" alt="Imagem 6" width="200"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/user-attachments/assets/f8c4ae91-a562-4d16-96ae-28d95acb0905" target="_blank">
-        <img src="https://github.com/user-attachments/assets/f8c4ae91-a562-4d16-96ae-28d95acb0905" alt="Imagem 7" width="200"/>
-      </a>
-    </td>
-  </tr>
-</table>
+  - Handled by named arguments.
+- **Statement**: 
+  - Lists all transactions (deposits and withdrawals).
+  - If no transactions were made, it informs the user.
+  - Can be accessed with both positional and named arguments.
+- **Users**:
+  - Users are registered with a unique CPF, which is validated to ensure it consists of 11 numeric digits.
+  - No duplicate CPFs are allowed in the system.
+- **Accounts**:
+  - Each user can have multiple accounts.
+  - Accounts are tied to a unique sequential number starting from 1 and linked to an agency (fixed as 0001).
+  - Only users with valid CPFs can create accounts.
 
 ## 🛠️ Technologies Used
 
