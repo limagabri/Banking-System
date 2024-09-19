@@ -36,6 +36,8 @@ The banking system includes the following features:
   - Each user can have multiple accounts.
   - Accounts are tied to a unique sequential number starting from 1 and linked to an agency (fixed as 0001).
   - Only users with valid CPFs can create accounts.
+=======
+- **Statement**: Lists all transactions (deposits and withdrawals). If there are no transactions, it informs that no transactions were made.
 
 ## 🛠️ Technologies Used
 
