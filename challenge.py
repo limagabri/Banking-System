@@ -1,6 +1,158 @@
 import re
+from datetime import datetime
 
-# List to store users and accounts
+class Customer:
+    def __init__(self, address):
+        self.address = address
+        self.accounts = []
+
+    def perform_transaction(self, account, transaction):
+        transaction.record(account)
+
+    def add_account(self, account):
+        self.accounts.append(account)
+
+
+class Individual(Customer):
+    def __init__(self, name, birth_date, cpf, address):
+        super().__init__(address)
+        self.name = name
+        self.birth_date = birth_date
+        self.cpf = cpf
+
+
+class Account:
+    def __init__(self, number, customer):
+        self._balance = 0
+        self._number = number
+        self._branch = "0001"
+        self._customer = customer
+        self._history = History()
+
+    @classmethod
+    def new_account(cls, customer, number):
+        return cls(number, customer)
+
+    @property
+    def balance(self):
+        return self._balance
+
+    @property
+    def number(self):
+        return self._number
+
+    @property
+    def branch(self):
+        return self._branch
+
+    @property
+    def customer(self):
+        return self._customer
+
+    @property
+    def history(self):
+        return self._history
+
+    def withdraw(self, amount):
+        balance = self.balance
+        exceeded_balance = amount > balance
+
+        if exceeded_balance:
+            print("\n@@@ Transaction failed! Insufficient balance. @@@")
+            return False
+        elif amount > 0:
+            self._balance -= amount
+            print("\n=== Withdrawal successful! ===")
+            return True
+        else:
+            print("\n@@@ Transaction failed! Invalid amount. @@@")
+            return False
+
+    def deposit(self, amount):
+        if amount > 0:
+            self._balance += amount
+            print("\n=== Deposit successful! ===")
+            return True
+        else:
+            print("\n@@@ Transaction failed! Invalid amount. @@@")
+            return False
+
+
+class CheckingAccount(Account):
+    def __init__(self, number, customer, limit=500, withdrawal_limit=3):
+        super().__init__(number, customer)
+        self.limit = limit
+        self.withdrawal_limit = withdrawal_limit
+
+    def withdraw(self, amount):
+        withdrawal_count = len(
+            [transaction for transaction in self.history.transactions if transaction["type"] == Withdrawal.__name__]
+        )
+
+        exceeded_limit = amount > self.limit
+        exceeded_withdrawals = withdrawal_count >= self.withdrawal_limit
+
+        if exceeded_limit:
+            print("\n@@@ Transaction failed! Amount exceeds the withdrawal limit. @@@")
+        elif exceeded_withdrawals:
+            print("\n@@@ Transaction failed! Maximum number of withdrawals exceeded. @@@")
+        else:
+            return super().withdraw(amount)
+
+        return False
+
+
+class History:
+    def __init__(self):
+        self._transactions = []
+
+    @property
+    def transactions(self):
+        return self._transactions
+
+    def add_transaction(self, transaction):
+        self._transactions.append(
+            {
+                "type": transaction.__class__.__name__,
+                "amount": transaction.amount,
+                "date": datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+            }
+        )
+
+
+class Transaction:
+    def record(self, account):
+        pass
+
+
+class Withdrawal(Transaction):
+    def __init__(self, amount):
+        self._amount = amount
+
+    @property
+    def amount(self):
+        return self._amount
+
+    def record(self, account):
+        transaction_success = account.withdraw(self.amount)
+        if transaction_success:
+            account.history.add_transaction(self)
+
+
+class Deposit(Transaction):
+    def __init__(self, amount):
+        self._amount = amount
+
+    @property
+    def amount(self):
+        return self._amount
+
+    def record(self, account):
+        transaction_success = account.deposit(self.amount)
+        if transaction_success:
+            account.history.add_transaction(self)
+
+
 users = []
 accounts = []
 account_number = 1
@@ -9,205 +161,138 @@ def display_menu():
     print(f"""
 === Banking System ===
 1. Deposit
-2. Withdraw
+2. Withdrawal
 3. Statement
 4. Create User
 5. Create Account
 6. List Accounts
-7. List Clients
+7. List Customers
 8. Exit
     """)
-    
+
     while True:
         option = input("Choose an option: ")
         if option.isdigit() and 1 <= int(option) <= 8:
             return int(option)
         else:
-            print("Invalid option. Please choose a number between 1 and 8.")
+            print("Invalid option. Choose a number between 1 and 8.")
 
-# CPF validator function
 def is_valid_cpf(cpf):
     return bool(re.match(r"^\d{11}$", cpf))
 
-# Function to create a user
 def create_user():
     global users
     name = input("Enter your name: ")
     birth_date = input("Enter your birth date (dd/mm/yyyy): ")
 
-    # Keep asking for a valid CPF until the user inputs it correctly
     while True:
         cpf = input("Enter your CPF (numbers only): ")
-
-        # Check if CPF is valid
         if not is_valid_cpf(cpf):
-            print("Invalid CPF. Please enter a valid 11-digit CPF number.")
+            print("Invalid CPF. Enter a valid 11-digit CPF.")
+        elif any(user['cpf'] == cpf for user in users):
+            print("User with this CPF already exists.")
         else:
-            # Check if user with this CPF already exists
-            if any(user['cpf'] == cpf for user in users):
-                print("User with this CPF already exists.")
-            else:
-                break  # CPF is valid and unique, we can exit the loop
+            break
 
     address = input("Enter your address (Format: Street, Number - Neighborhood - City/State): ")
-    
-    users.append({
-        'name': name,
-        'birth_date': birth_date,
-        'cpf': cpf,
-        'address': address
-    })
-    print(f"User {name} was successfully created!")
+    user = Individual(name, birth_date, cpf, address)
+    users.append(user)
+    print(f"User {name} was created successfully!")
 
-# Function to create an account
 def create_account():
     global accounts, account_number
-    cpf = input("Enter the CPF of the user to create an account: ")
-    
-    # Find user by CPF
-    user = next((user for user in users if user['cpf'] == cpf), None)
+    cpf = input("Enter the user's CPF to create an account: ")
+
+    user = next((user for user in users if user.cpf == cpf), None)
     if user is None:
         print("No user found with this CPF.")
         return
-    
-    # Create account
-    accounts.append({
-        'agency': '0001',
-        'account_number': account_number,
-        'user': user,
-        'balance': 0,          # Each account starts with a zero balance
-        'statement': [],       # Each account has its own statement history
-        'daily_withdrawals': 0  # Track daily withdrawals
-    })
-    print(f"Account number {account_number} created for user {user['name']}.")
+
+    account = CheckingAccount(account_number, user)
+    user.add_account(account)
+    accounts.append(account)
+    print(f"Account number {account_number} created for user {user.name}.")
     account_number += 1
 
-# Function to list all accounts
 def list_accounts():
     if not accounts:
         print("No accounts created yet.")
     else:
         for account in accounts:
-            print(f"Agency: {account['agency']}, Account Number: {account['account_number']}, User: {account['user']['name']}")
+            print(f"Branch: {account.branch}, Account: {account.number}, User: {account.customer.name}")
 
-# Function to list all clients
-def list_clients():
+def list_customers():
     if not users:
-        print("No clients registered yet.")
+        print("No customers registered yet.")
     else:
         for user in users:
-            print(f"Name: {user['name']}, CPF: {user['cpf']}, Address: {user['address']}")
+            print(f"Name: {user.name}, CPF: {user.cpf}, Address: {user.address}")
 
-# Function to select an account by CPF and account number
 def select_account():
     cpf = input("Enter the CPF to select an account: ")
-    
-    # Find accounts for the given CPF
-    user_accounts = [acc for acc in accounts if acc['user']['cpf'] == cpf]
-    
+
+    user_accounts = [acc for acc in accounts if acc.customer.cpf == cpf]
     if not user_accounts:
-        print("No accounts found for this CPF.")
+        print("No account found for this CPF.")
         return None
-    
-    print("Available accounts:")
-    for acc in user_accounts:
-        print(f"Account Number: {acc['account_number']} - Balance: R$ {acc['balance']:.2f}")
-    
-    acc_number = int(input("Enter the account number: "))
-    
-    # Find the account with the matching account number
-    selected_account = next((acc for acc in user_accounts if acc['account_number'] == acc_number), None)
-    
-    if selected_account is None:
-        print("Invalid account number.")
-        return None
-    
-    return selected_account
 
-# Modified deposit function to work with the selected account
-def deposit(account):
-    try:
-        amount = float(input("Enter the deposit amount: R$ "))
-        if amount > 0:
-            account['balance'] += amount
-            account['statement'].append(f"Deposit: R$ {amount:.2f}")
-            print(f"Deposit of R$ {amount:.2f} was successful!")
-        else:
-            print("Invalid deposit amount.")
-    except ValueError:
-        print("Invalid input. Please enter a valid number.")
+    print("Available accounts for the provided CPF:")
+    for account in user_accounts:
+        print(f"Account number: {account.number}")
 
-# Modified withdraw function with limit and max withdrawals per day, receiving arguments by name
-def withdraw(*, account, daily_withdrawal_limit, max_withdrawals):
-    if account['daily_withdrawals'] >= max_withdrawals:
-        print(f"Daily withdrawal limit reached. You can make a maximum of {max_withdrawals} withdrawals per day.")
-        return
-    
-    try:
-        amount = float(input("Enter the withdrawal amount: R$ "))
-        if amount > account['balance']:
-            print("Insufficient balance for the withdrawal.")
-        elif amount > daily_withdrawal_limit:
-            print(f"Amount exceeds the maximum limit of R$ {daily_withdrawal_limit:.2f} per withdrawal.")
-        elif amount > 0:
-            account['balance'] -= amount
-            account['statement'].append(f"Withdrawal: R$ {amount:.2f}")
-            account['daily_withdrawals'] += 1
-            print(f"Withdrawal of R$ {amount:.2f} was successful!")
-        else:
-            print("Invalid withdrawal amount.")
-    except ValueError:
-        print("Invalid input. Please enter a valid number.")
-
-# Modified statement function to work with the selected account
-def display_statement(account):
-    print("\n=== Statement ===")
-    if account['statement']:
-        for item in account['statement']:
-            print(item)
-    else:
-        print("No transactions were made.")
-    print(f"Current balance: R$ {account['balance']:.2f}")
-
-def main():
-    daily_withdrawal_limit = 500
-    max_withdrawals = 3
-    
     while True:
-        option = display_menu()
-        
-        if option == 1:  # Deposit
-            selected_account = select_account()
-            if selected_account:
-                deposit(selected_account)
-        
-        elif option == 2:  # Withdraw
-            selected_account = select_account()
-            if selected_account:
-                withdraw(account=selected_account, daily_withdrawal_limit=daily_withdrawal_limit, max_withdrawals=max_withdrawals)
-        
-        elif option == 3:  # Statement
-            selected_account = select_account()
-            if selected_account:
-                display_statement(selected_account)
-        
-        elif option == 4:  # Create User
-            create_user()
-        
-        elif option == 5:  # Create Account
-            create_account()
-        
-        elif option == 6:  # List Accounts
-            list_accounts()
+        account_number = input("Enter the desired account number: ")
+        selected_account = next((acc for acc in user_accounts if str(acc.number) == account_number), None)
 
-        elif option == 7:  # List Clients
-            list_clients()
-        
-        elif option == 8:  # Exit
-            print("Exiting the system. Thank you for using our bank!")
-            break
-        
-        input("Press Enter to return to the menu.")
+        if selected_account:
+            return selected_account
+        else:
+            print("Invalid account number. Try again.")
 
-if __name__ == "__main__":
-    main()
+def deposit():
+    account = select_account()
+    if account is None:
+        return
+
+    value = float(input("Enter the deposit amount: "))
+    transaction = Deposit(value)
+    account.customer.perform_transaction(account, transaction)
+
+def withdraw():
+    account = select_account()
+    if account is None:
+        return
+
+    value = float(input("Enter the withdrawal amount: "))
+    transaction = Withdrawal(value)
+    account.customer.perform_transaction(account, transaction)
+
+def statement():
+    account = select_account()
+    if account is None:
+        return
+
+    print("\n=== Account Statement ===")
+    for transaction in account.history.transactions:
+        print(f"{transaction['type']} of R$ {transaction['amount']} on {transaction['date']}")
+    print(f"\nCurrent balance: R$ {account.balance:.2f}")
+
+while True:
+    option = display_menu()
+
+    if option == 1:
+        deposit()
+    elif option == 2:
+        withdraw()
+    elif option == 3:
+        statement()
+    elif option == 4:
+        create_user()
+    elif option == 5:
+        create_account()
+    elif option == 6:
+        list_accounts()
+    elif option == 7:
+        list_customers()
+    elif option == 8:
+        break
